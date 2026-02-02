@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <title>{% block title %} {% endblock %}</title>
+</head>
+<header>
+    <nav class="top">
+        <a href="/">Главная</a>
+        <a href="p2">Страница 2</a>
+    </nav>
+</header>
+<body>
+    {% block body %} {% endblock %}
+</body>
+</html>
