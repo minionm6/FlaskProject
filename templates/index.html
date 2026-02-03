@@ -1,12 +1,16 @@
 {% extends 'base.html' %}
 
 {% block title %} 
-home
+    home
 {% endblock %}
 
 {% block body %} 
-<h1>Главная </h1>
-<p>сайт с помощью фласк с использованием шаблонов
-    и еще чего то
-</p>
+    <h1>home</h1>
+    <form method="post">
+        <input type="text" name = "ip" placeholder="enter ip">
+        <button type="submit">PING</button>
+    </form>
+    <pre>
+        {{output}}
+    </pre>
 {% endblock %}

@@ -1,2 +1,2 @@
 # FlaskProject
-Простой сайт на Flask. 
+Простой сайт на Flask.
