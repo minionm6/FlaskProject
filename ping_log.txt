@@ -1,84 +1,48 @@
-Time - 2026-02-03 16:46:51.296727
---- 10.10.0.187 is reachable ---PING 10.10.0.187 (10.10.0.187) 56(84) bytes of data.
-64 bytes from 10.10.0.187: icmp_seq=1 ttl=128 time=0.911 ms
-64 bytes from 10.10.0.187: icmp_seq=2 ttl=128 time=0.467 ms
-64 bytes from 10.10.0.187: icmp_seq=3 ttl=128 time=0.545 ms
-64 bytes from 10.10.0.187: icmp_seq=4 ttl=128 time=0.425 ms
-64 bytes from 10.10.0.187: icmp_seq=5 ttl=128 time=0.431 ms
-64 bytes from 10.10.0.187: icmp_seq=6 ttl=128 time=0.469 ms
-64 bytes from 10.10.0.187: icmp_seq=7 ttl=128 time=0.481 ms
-64 bytes from 10.10.0.187: icmp_seq=8 ttl=128 time=0.461 ms
+Time - 2026-02-04 13:23:54.433778
+[REACHABLE] 4 packets transmitted, 4 received, 0% packet loss, time 3069ms
 
---- 10.10.0.187 ping statistics ---
-8 packets transmitted, 8 received, 0% packet loss, time 7163ms
-rtt min/avg/max/mdev = 0.425/0.523/0.911/0.150 ms
+Time - 2026-02-04 13:33:57.473673
+[REACHABLE] 4 packets transmitted, 4 received, 0% packet loss, time 3031ms
 
+Time - 2026-02-04 13:44:00.513371
+[REACHABLE] 4 packets transmitted, 4 received, 0% packet loss, time 3031ms
 
-Time - 2026-02-03 16:56:58.466002
---- 10.10.0.187 is reachable ---PING 10.10.0.187 (10.10.0.187) 56(84) bytes of data.
-64 bytes from 10.10.0.187: icmp_seq=1 ttl=128 time=1.15 ms
-64 bytes from 10.10.0.187: icmp_seq=2 ttl=128 time=0.592 ms
-64 bytes from 10.10.0.187: icmp_seq=3 ttl=128 time=0.599 ms
-64 bytes from 10.10.0.187: icmp_seq=4 ttl=128 time=0.564 ms
-64 bytes from 10.10.0.187: icmp_seq=5 ttl=128 time=0.582 ms
-64 bytes from 10.10.0.187: icmp_seq=6 ttl=128 time=0.509 ms
-64 bytes from 10.10.0.187: icmp_seq=7 ttl=128 time=0.633 ms
-64 bytes from 10.10.0.187: icmp_seq=8 ttl=128 time=0.507 ms
+Time - 2026-02-04_13-55-11
+[REACHABLE] 4 packets transmitted, 4 received, 0% packet loss, time 3068ms
 
---- 10.10.0.187 ping statistics ---
-8 packets transmitted, 8 received, 0% packet loss, time 7128ms
-rtt min/avg/max/mdev = 0.507/0.641/1.149/0.195 ms
+Time - 04-02-2026 13:56:09
+[REACHABLE] 4 packets transmitted, 4 received, 0% packet loss, time 3058ms
 
+Time - 04-02-2026 13:57:02
+[REACHABLE] 4 packets transmitted, 4 received, 0% packet loss, time 3073ms
 
-Time - 2026-02-03 17:02:03.029348
---- 10.10.0.187 is reachable ---PING 10.10.0.187 (10.10.0.187) 56(84) bytes of data.
-64 bytes from 10.10.0.187: icmp_seq=1 ttl=128 time=0.821 ms
-64 bytes from 10.10.0.187: icmp_seq=2 ttl=128 time=0.444 ms
-64 bytes from 10.10.0.187: icmp_seq=3 ttl=128 time=0.446 ms
-64 bytes from 10.10.0.187: icmp_seq=4 ttl=128 time=0.450 ms
+Time - 04-02-2026 14:07:05
+[REACHABLE] 4 packets transmitted, 4 received, 0% packet loss, time 3031ms
 
---- 10.10.0.187 ping statistics ---
-4 packets transmitted, 4 received, 0% packet loss, time 3047ms
-rtt min/avg/max/mdev = 0.444/0.540/0.821/0.162 ms
+Time - 04-02-2026 14:17:08
+[REACHABLE] 4 packets transmitted, 4 received, 0% packet loss, time 3066ms
 
+Time - 04-02-2026 14:22:51
+[REACHABLE] 4 packets transmitted, 4 received, 0% packet loss, time 3074ms
 
+Time - 04-02-2026 14:32:54
+[REACHABLE] 4 packets transmitted, 4 received, 0% packet loss, time 3030ms
 
-Time - 2026-02-03 17:02:03.193725
---- 10.10.0.187 is reachable ---PING 10.10.0.187 (10.10.0.187) 56(84) bytes of data.
-64 bytes from 10.10.0.187: icmp_seq=1 ttl=128 time=0.407 ms
-64 bytes from 10.10.0.187: icmp_seq=2 ttl=128 time=0.356 ms
-64 bytes from 10.10.0.187: icmp_seq=3 ttl=128 time=0.402 ms
-64 bytes from 10.10.0.187: icmp_seq=4 ttl=128 time=0.409 ms
+Time - 04-02-2026 14:42:57
+[REACHABLE] 4 packets transmitted, 4 received, 0% packet loss, time 3032ms
 
---- 10.10.0.187 ping statistics ---
-4 packets transmitted, 4 received, 0% packet loss, time 3047ms
-rtt min/avg/max/mdev = 0.356/0.393/0.409/0.021 ms
+Time - 04-02-2026 14:53:00
+[REACHABLE] 4 packets transmitted, 4 received, 0% packet loss, time 3063ms
 
+Time - 04-02-2026 15:03:03
+[REACHABLE] 4 packets transmitted, 4 received, 0% packet loss, time 3032ms
 
+Time - 04-02-2026 15:13:06
+[REACHABLE] 4 packets transmitted, 4 received, 0% packet loss, time 3032ms
 
-Time - 2026-02-03 17:06:42.930927
---- 10.10.0.187 is reachable ---PING 10.10.0.187 (10.10.0.187) 56(84) bytes of data.
-64 bytes from 10.10.0.187: icmp_seq=1 ttl=128 time=0.351 ms
-64 bytes from 10.10.0.187: icmp_seq=2 ttl=128 time=0.395 ms
-64 bytes from 10.10.0.187: icmp_seq=3 ttl=128 time=0.532 ms
-64 bytes from 10.10.0.187: icmp_seq=4 ttl=128 time=0.404 ms
+Time - 04-02-2026 15:23:09
+[REACHABLE] 4 packets transmitted, 4 received, 0% packet loss, time 3065ms
 
---- 10.10.0.187 ping statistics ---
-4 packets transmitted, 4 received, 0% packet loss, time 3049ms
-rtt min/avg/max/mdev = 0.351/0.420/0.532/0.067 ms
-
-
-
-Time - 2026-02-03 17:06:43.101825
---- 10.10.0.187 is reachable ---PING 10.10.0.187 (10.10.0.187) 56(84) bytes of data.
-64 bytes from 10.10.0.187: icmp_seq=1 ttl=128 time=0.390 ms
-64 bytes from 10.10.0.187: icmp_seq=2 ttl=128 time=0.549 ms
-64 bytes from 10.10.0.187: icmp_seq=3 ttl=128 time=0.510 ms
-64 bytes from 10.10.0.187: icmp_seq=4 ttl=128 time=0.423 ms
-
---- 10.10.0.187 ping statistics ---
-4 packets transmitted, 4 received, 0% packet loss, time 3043ms
-rtt min/avg/max/mdev = 0.390/0.468/0.549/0.064 ms
-
-
+Time - 04-02-2026 15:33:12
+[REACHABLE] 4 packets transmitted, 4 received, 0% packet loss, time 3032ms
 

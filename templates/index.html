@@ -1,16 +1,33 @@
 {% extends 'base.html' %}
 
-{% block title %} 
-    home
-{% endblock %}
+{% block title %}Home{% endblock %}
 
 {% block body %} 
-    <h1>home</h1>
-    <form method="post">
-        <input type="text" name = "ip" placeholder="enter ip">
-        <button type="submit">PING</button>
-    </form>
-    <pre>
-        {{output}}
-    </pre>
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h1 class="card-title h4 mb-4">Check ip</h1>
+                <form method="post" class="input-group mb-3">
+                    <input type="text" name="ip" class="form-control" placeholder="Enter ip" required>
+                    <button class="btn btn-primary" type="submit">PING</button>
+                </form>
+
+                {% if output %}
+                <div class="mt-4">
+                    <h5 class="text-muted">Result:</h5>
+                    <div class="p-3 border rounded {% if 'REACHABLE' in output %}bg-success-subtle border-success{% else %}bg-danger-subtle border-danger{% endif %}">
+                        <pre class="mb-0"><code>{{ output }}</code></pre>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row justify-content-between">
+    <div class="col-md-11">
+        Lorem ipsum dolor sit amet consectetur adipisicing elit. Consequatur illum, ratione nisi, inventore blanditiis quis mollitia doloribus tempore soluta odit quidem, vero impedit reiciendis laudantium modi ex. Maxime voluptate sit laboriosam repellendus iure accusamus, doloremque nulla rem saepe consequatur voluptatum enim corporis eius natus. Exercitationem numquam labore odit totam voluptatibus aliquid error quasi. Rerum ut modi non soluta suscipit. Culpa pariatur obcaecati nisi voluptates vel impedit qui vero ullam quidem officia dolorem maxime, nihil adipisci iste, accusamus, omnis ea delectus hic! Qui reprehenderit in est ipsam illum, nemo hic. Veniam exercitationem, excepturi ex dignissimos vero laborum magnam adipisci maxime aut aliquid minima, impedit possimus voluptatum sunt praesentium accusantium cumque autem enim repellat. Eius aspernatur ea blanditiis. Veritatis excepturi aperiam ex non facere vero dolorum deleniti culpa, quam maxime officiis iste, numquam necessitatibus dolor. Facilis cupiditate nemo quas. Aperiam sequi maxime quidem molestias? Praesentium sed cumque nostrum dolores veritatis, earum laudantium voluptate fuga id nisi nam nesciunt a mollitia itaque deleniti porro ullam, facilis consequuntur error quae at illo distinctio harum provident! Aperiam velit distinctio atque nam, asperiores incidunt cupiditate ex placeat delectus, nihil porro similique modi animi adipisci doloremque consequuntur iure! Sequi soluta ab aperiam delectus porro, inventore debitis incidunt fuga maiores facere! Cum corporis inventore, enim id ipsam vero, expedita aut amet aperiam possimus repellendus quaerat odio hic numquam a saepe voluptas sit suscipit iste tempora! Sed laborum id architecto exercitationem adipisci aperiam quibusdam ut, tempora expedita deserunt molestiae consequuntur eius asperiores explicabo voluptas nemo consequatur. Sint velit error consequatur et corrupti voluptates maxime officiis porro magnam. Distinctio, quia! Reprehenderit ut praesentium delectus minus nobis saepe officia, quos ab temporibus natus, fugiat iusto doloremque error et repellat magnam excepturi, vitae blanditiis quod? Deserunt vero ipsam nesciunt vitae ab, dolor culpa. Quam laboriosam magni molestiae autem. Nobis nisi enim commodi dicta incidunt? Impedit necessitatibus quas magni est corporis quisquam sit voluptas dolores aliquid expedita harum ullam, earum eos quaerat inventore consequuntur provident debitis reiciendis, odit, nemo neque nisi sunt dolorum consectetur? Ab, saepe totam aspernatur facilis fugiat reprehenderit? Necessitatibus aliquam, officia suscipit aspernatur dolorem quidem voluptatem! Eius facere aliquid molestiae dolores quod iste voluptatibus et sunt tenetur dolore nisi quia dolorum magnam consectetur nihil, quae laudantium rerum ipsa laboriosam quisquam cumque. Praesentium vitae asperiores at soluta. Quaerat facere provident quae, deleniti expedita magni. Delectus quidem perferendis corporis illum nam? Quia, doloribus voluptate vel reiciendis minima accusantium provident perspiciatis eveniet! Velit voluptas tempore aut impedit sint ratione placeat, quibusdam, nesciunt dolorum mollitia cum possimus id molestias, veniam beatae. Asperiores animi consequuntur maxime ipsam nulla iste quod aliquam, nemo vitae magnam doloremque molestias voluptates eveniet repellendus? Numquam unde eius aliquid quis expedita nihil adipisci. Harum?
+    </div>
+</div>
 {% endblock %}
