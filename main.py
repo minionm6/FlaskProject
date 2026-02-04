@@ -54,7 +54,7 @@ def process_ping_logging():
         
         ping_result = ping_device('10.10.0.187')    
         # Формирование данных
-        log_now = f"Time - {dt.now().strftime('%d-%m-%Y %H:%M:%S')}\n{ping_result}\n\n"   
+        log_now = f"\nTime - {dt.now().strftime('%d-%m-%Y %H:%M:%S')}\n{ping_result}\n"   
         
         
         try:
@@ -67,7 +67,7 @@ def process_ping_logging():
         except Exception as e:
             print(f"Ошибка записи лога: {e}")
 
-        time.sleep(600)
+        time.sleep(5)
 
 
 def start_ping_monitoring():

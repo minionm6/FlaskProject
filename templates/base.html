@@ -4,16 +4,46 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
     <title>{% block title %} {% endblock %}</title>
 </head>
 
 <body>
     <header>
-        <nav class="top">
-            <a href="/">Главная</a>
-            <a href="/log">Логи 10.10.0.187</a>
-        </nav>
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+            <div class="container">
+              <!-- Логотип или Название -->
+              <a class="navbar-brand" href="/">Название</a>
+              
+              <!-- Кнопка-бургер для мобилок -->
+              <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+              </button>
+              
+              <!-- Ссылки меню -->
+              <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto"> 
+                  <li class="nav-item">
+                    <a class="nav-link active" href="/">Главная</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="/log">Логи 10.10.0.187</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="#">еще одна ссылка</a>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </nav>
     </header>
-    {% block body %} {% endblock %}
+    <div class="container">
+        {% block body %} {% endblock %}
+    </div>
+    <footer>
+
+    </footer>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
 </body>
 </html>

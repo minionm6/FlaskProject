@@ -5,12 +5,30 @@
 {% endblock %}
 
 {% block body %} 
-    <h1>home</h1>
-    <form method="post">
-        <input type="text" name = "ip" placeholder="enter ip">
-        <button type="submit">PING</button>
-    </form>
-    <pre>
-        {{output}}
-    </pre>
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card bg-dark text-white border-secondary shadow-lg">
+                <div class="card-body p-4">
+                    <h5 class="card-title mb-4">Check ip</h5>
+                    
+                    <form method="post" class="d-flex gap-2 mb-4">
+                        <input type="text" name="ip" 
+                               class="form-control bg-dark text-white border-secondary" 
+                               placeholder="Введите IP адрес..." required>
+                        <button type="submit" class="btn btn-primary px-4">PING</button>
+                    </form>
+
+                    <!-- Результат -->
+                    {% if output %}
+                    <div class="mt-4">
+                        <label class="form-label text-white fw-bold">Результат выполнения:</label>
+                        <pre>{{output}}</pre>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}
