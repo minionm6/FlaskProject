@@ -67,7 +67,7 @@ def process_ping_logging():
         except Exception as e:
             print(f"Ошибка записи лога: {e}")
 
-        time.sleep(5)
+        time.sleep(600)
 
 
 def start_ping_monitoring():
