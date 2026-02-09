@@ -1,26 +1,83 @@
 {% extends 'base.html' %}
 
-{% block title %} 
-    ping 10.10.0.187
-{% endblock %}
+{% block title %}Ping Logs{% endblock %}
 
-{% block body %} 
-<div class="container mt-4 mb-5">
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card bg-dark text-white border-secondary shadow-lg">
-                <div class="card-header border-secondary bg-transparent">
-                    <h5 class="mb-0 text-warning">
-                        <i class="bi bi-clock-history"></i> Last 60 minutes
-                    </h5>
+{% block content %}
+<div class="row fade-in">
+    <div class="col-12">
+        <div class="card card-dark">
+            <div class="card-header card-header-dark d-flex justify-content-between align-items-center">
+                <div>
+                    <h4 class="mb-0">
+                        <i class="bi bi-server me-2"></i>Monitoring: 10.10.0.187
+                    </h4>
+                    <small class="text-secondary">Auto-refresh every 10 minutes</small>
                 </div>
-                <div class="card-body p-0"> <!-- p-0 чтобы лог прилегал к краям -->
-                    <pre class="m-0 border-0" style="max-height: 400px; overflow-y: auto; background-color: #000 !important;">
+                <div>
+                    <span class="badge bg-info me-2">Last 60 minutes</span>
+                    <span class="badge bg-dark">{{ logs|length }} entries</span>
+                </div>
+            </div>
+            
+            <div class="card-body p-0">
+                <div class="log-container">
+                    {% if logs %}
                         {% for log in logs %}
-                        <div class="px-3 py-1 border-bottom border-secondary small" style="font-family: 'Courier New', monospace;">{{ log.strip() }}</div>
+                        <div class="log-entry">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <div>
+                                    <span class="log-time">
+                                        <i class="bi bi-calendar-event me-1"></i>
+                                        {{ log.split('Time - ')[1].split('\n')[0] if 'Time -' in log else 'N/A' }}
+                                    </span>
+                                </div>
+                                {% if 'REACHABLE' in log %}
+                                    <span class="badge bg-success">Online</span>
+                                {% elif 'UNREACHABLE' in log %}
+                                    <span class="badge bg-warning">Unreachable</span>
+                                {% else %}
+                                    <span class="badge bg-danger">Error</span>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="mt-2">
+                                {% for line in log.split('\n') if line.strip() %}
+                                    {% if 'packets transmitted' in line %}
+                                        <div class="d-flex align-items-center">
+                                            <i class="bi bi-arrow-right-short me-2 text-info"></i>
+                                            <code class="text-info">{{ line }}</code>
+                                        </div>
+                                    {% elif 'REACHABLE' in line %}
+                                        <code class="log-success">{{ line }}</code>
+                                    {% elif 'UNREACHABLE' in line %}
+                                        <code class="log-warning">{{ line }}</code>
+                                    {% elif 'ERROR' in line or 'TIMEOUT' in line %}
+                                        <code class="log-error">{{ line }}</code>
+                                    {% elif line and 'Time -' not in line %}
+                                        <code class="text-white">{{ line }}</code>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                        </div>
                         {% endfor %}
-                    </pre>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="bi bi-inbox display-1 text-secondary"></i>
+                            <h5 class="mt-3 text-secondary">No logs yet</h5>
+                            <p class="text-secondary">Monitoring will populate this view shortly.</p>
+                        </div>
+                    {% endif %}
                 </div>
+            </div>
+            
+            <div class="card-footer card-header-dark d-flex justify-content-between">
+                <small class="text-secondary">
+                    <i class="bi bi-info-circle me-1"></i>
+                    Logs are automatically rotated (last 6 entries)
+                </small>
+                <button class="btn btn-sm btn-outline-secondary" onclick="window.location.reload()">
+                    <i class="bi bi-arrow-clockwise me-1"></i>Refresh
+                </button>
             </div>
         </div>
     </div>

@@ -1,49 +1,90 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-bs-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ping Monitor | {% block title %}{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
-    <title>{% block title %} {% endblock %}</title>
 </head>
 
-<body>
-    <header>
-        <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
-            <div class="container">
-              <!-- Логотип или Название -->
-              <a class="navbar-brand" href="/">Название</a>
-              
-              <!-- Кнопка-бургер для мобилок -->
-              <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+<body class="d-flex flex-column min-vh-100">
+    <!-- Навигация -->
+    <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center" href="/">
+                <i class="bi bi-wifi me-2"></i>
+                <span class="fw-bold">Network Monitor</span>
+            </a>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
                 <span class="navbar-toggler-icon"></span>
-              </button>
-              
-              <!-- Ссылки меню -->
-              <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto"> 
-                  <li class="nav-item">
-                    <a class="nav-link active" href="/">Главная</a>
-                  </li>
-                  <li class="nav-item">
-                    <a class="nav-link" href="/log">Логи 10.10.0.187</a>
-                  </li>
-                  <li class="nav-item">
-                    <a class="nav-link" href="#">еще одна ссылка</a>
-                  </li>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarContent">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.path == '/' %}active{% endif %}" href="/">
+                            <i class="bi bi-house-door me-1"></i> Home
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.path == '/log' %}active{% endif %}" href="/log">
+                            <i class="bi bi-clock-history me-1"></i> Ping Logs
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">
+                            <i class="bi bi-gear me-1"></i> Settings
+                        </a>
+                    </li>
                 </ul>
-              </div>
             </div>
-          </nav>
-    </header>
-    <div class="container">
-        {% block body %} {% endblock %}
-    </div>
-    <footer>
+        </div>
+    </nav>
 
+    <!-- Основной контент -->
+    <main class="flex-grow-1 pt-5">
+        <div class="container py-4">
+            {% with messages = get_flashed_messages() %}
+                {% if messages %}
+                    {% for message in messages %}
+                    <div class="alert alert-info alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+            
+            {% block content %}{% endblock %}
+        </div>
+    </main>
+
+    <!-- Футер -->
+    <footer class="mt-auto py-3 border-top border-secondary">
+        <div class="container text-center text-muted">
+            <small>
+                <i class="bi bi-code-slash"></i> Ping Monitor v1.0 | 
+                <span id="currentYear"></span> | 
+                Status: <span class="status-indicator status-online"></span> Monitoring Active
+            </small>
+        </div>
     </footer>
-    
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Текущий год в футере
+        document.getElementById('currentYear').textContent = new Date().getFullYear();
+        
+        // Автоматическое скрытие алертов
+        setTimeout(() => {
+            const alerts = document.querySelectorAll('.alert');
+            alerts.forEach(alert => {
+                bootstrap.Alert.getOrCreateInstance(alert).close();
+            });
+        }, 5000);
+    </script>
 </body>
 </html>
