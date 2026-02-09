@@ -1,19 +1,47 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, flash
 import subprocess
 from datetime import datetime as dt
 import time
 from collections import deque
 import threading
 import re
+import ipaddress
+from functools import wraps
+
+#  Конфигурация
+PING_INTERVAL = 5  # Секунд
+LOG_COUNT = 6   # Количество последних логов
+TARGET_IP = "10.10.0.187"
+LOG_FILE = "ping_log.txt"
 
 app = Flask(__name__)
 
+logs_for_site = deque(maxlen=LOG_COUNT)     # Дэк для вывода последних логов на сайт
+logs_lock = threading.Lock()
+_ping_thread_started = False    # Проверяет, запущен ли поток логирования или нет
+app_start_time = dt.now()
+
+
+def validate_ip(ip: str):
+    '''Проверяет на правильность ввода'''
+
+    try:
+        ipaddress.ip_address(ip)
+        return True
+    except ValueError:
+        return False
+    
 
 def ping_device(ip: str):
     """Пингует IP и возвращает статус + одну строку статистики"""
 
-    try:
-        
+    if not validate_ip(ip):
+        return "[ERROR] Invalid IP address format"
+    
+    if not re.match(r'^[\d\.]+$', ip):
+        return "[ERROR] Invalid characters in IP address"
+    
+    try:    
         result = subprocess.run(
             ["ping", "-c", "4", ip],
             capture_output=True,
@@ -52,14 +80,14 @@ def process_ping_logging():
     
     while True:
         
-        ping_result = ping_device('10.10.0.187')    
+        ping_result = ping_device(TARGET_IP)    
         # Формирование данных
         log_now = f"\nTime - {dt.now().strftime('%d-%m-%Y %H:%M:%S')}\n{ping_result}\n"   
         
         
         try:
             # Запись в файл
-            with open("ping_log.txt", "a", encoding="utf-8") as f:
+            with open(LOG_FILE, "a", encoding="utf-8") as f:
                 f.write(log_now)
             
             # Передача данных на сайт
@@ -67,7 +95,7 @@ def process_ping_logging():
         except Exception as e:
             print(f"Ошибка записи лога: {e}")
 
-        time.sleep(600)
+        time.sleep(PING_INTERVAL)
 
 
 def start_ping_monitoring():
@@ -86,8 +114,10 @@ def index():
     output = ""
     if request.method == 'POST':
         ip = request.form.get('ip')
-        if ip:
+        if ip and validate_ip(ip):
             output = ping_device(ip)
+        else:
+            output = "Invalid IP address"
     return render_template('index.html', output=output)
 
 
