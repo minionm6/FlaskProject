@@ -6,10 +6,9 @@ from collections import deque
 import threading
 import re
 import ipaddress
-from functools import wraps
 
 #  Конфигурация
-PING_INTERVAL = 5  # Секунд
+PING_INTERVAL = 600  # Секунд
 LOG_COUNT = 6   # Количество последних логов
 TARGET_IP = "10.10.0.187"
 LOG_FILE = "ping_log.txt"
@@ -17,7 +16,6 @@ LOG_FILE = "ping_log.txt"
 app = Flask(__name__)
 
 logs_for_site = deque(maxlen=LOG_COUNT)     # Дэк для вывода последних логов на сайт
-logs_lock = threading.Lock()
 _ping_thread_started = False    # Проверяет, запущен ли поток логирования или нет
 app_start_time = dt.now()
 
@@ -111,6 +109,7 @@ def start_ping_monitoring():
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
+    now = dt.now()
     output = ""
     if request.method == 'POST':
         ip = request.form.get('ip')
@@ -118,7 +117,7 @@ def index():
             output = ping_device(ip)
         else:
             output = "Invalid IP address"
-    return render_template('index.html', output=output)
+    return render_template('index.html', output=output, now = now)
 
 
 @app.route('/log', methods=['GET', 'POST'])
