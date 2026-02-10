@@ -1,38 +1,28 @@
-from flask import Flask, render_template, request, flash
 import subprocess
-from datetime import datetime as dt
 import time
-from collections import deque
-import threading
 import re
 import ipaddress
+from datetime import datetime as dt
+from collections import deque
+import threading
+from app.config import Config
 
-#  Конфигурация
-PING_INTERVAL = 600  # Секунд
-LOG_COUNT = 6   # Количество последних логов
-TARGET_IP = "10.10.0.187"
-LOG_FILE = "ping_log.txt"
-
-app = Flask(__name__)
-
-logs_for_site = deque(maxlen=LOG_COUNT)     # Дэк для вывода последних логов на сайт
-_ping_thread_started = False    # Проверяет, запущен ли поток логирования или нет
-app_start_time = dt.now()
+# Глобальные переменные для хранения состояния
+logs_for_site = deque(maxlen=Config.LOG_COUNT)
+_ping_thread_started = False
 
 
 def validate_ip(ip: str):
-    '''Проверяет на правильность ввода'''
-
+    '''Проверяет на правильность ввода IP-адреса'''
     try:
         ipaddress.ip_address(ip)
         return True
     except ValueError:
         return False
-    
+
 
 def ping_device(ip: str):
     """Пингует IP и возвращает статус + одну строку статистики"""
-
     if not validate_ip(ip):
         return "[ERROR] Invalid IP address format"
     
@@ -52,13 +42,13 @@ def ping_device(ip: str):
         stats_line = stats_match.group(1) if stats_match else "No stats found"
 
         match result.returncode:
-            case 0: # Код 0 - адрес доступен
+            case 0:  # Код 0 - адрес доступен
                 status = "REACHABLE"
-            case 1: # Код 1 - адрес недоступен
+            case 1:  # Код 1 - адрес недоступен
                 status = "UNREACHABLE"
-            case 2: # Код 2 - ошибка, причина в stderr
+            case 2:  # Код 2 - ошибка, причина в stderr
                 status = f"SYSTEM ERROR ({result.stderr.strip()})"
-            case _: # Неопознанный код
+            case _:  # Неопознанный код
                 status = f"UNKNOWN CODE {result.returncode}"
 
         return f"[{status}] {stats_line}"
@@ -69,23 +59,17 @@ def ping_device(ip: str):
         return f"[ERROR] {e}"
 
 
-logs_for_site = deque(maxlen=6) # Дэк для вывода последних логов на сайт
-_ping_thread_started = False    # Проверяет, запущен ли поток логирования или нет
-
-
 def process_ping_logging():
-    """Пингует 10.10.0.187 каждые 10 минут и записывает в файл и на сайт"""
-    
+    """Пингует целевой IP каждые N минут и записывает в файл и на сайт"""
     while True:
+        ping_result = ping_device(Config.TARGET_IP)
         
-        ping_result = ping_device(TARGET_IP)    
         # Формирование данных
-        log_now = f"\nTime - {dt.now().strftime('%d-%m-%Y %H:%M:%S')}\n{ping_result}\n"   
-        
+        log_now = f"\nTime - {dt.now().strftime('%d-%m-%Y %H:%M:%S')}\n{ping_result}\n"
         
         try:
             # Запись в файл
-            with open(LOG_FILE, "a", encoding="utf-8") as f:
+            with open(Config.LOG_FILE, "a", encoding="utf-8") as f:
                 f.write(log_now)
             
             # Передача данных на сайт
@@ -93,38 +77,21 @@ def process_ping_logging():
         except Exception as e:
             print(f"Ошибка записи лога: {e}")
 
-        time.sleep(PING_INTERVAL)
+        time.sleep(Config.PING_INTERVAL)
 
 
 def start_ping_monitoring():
     """Безопасный запуск мониторинга в отдельном потоке"""
-
     global _ping_thread_started
+    
     # Для исключения дублирования потоков
-    if not _ping_thread_started:    
+    if not _ping_thread_started:
         thread = threading.Thread(target=process_ping_logging, daemon=True)
         thread.start()
         _ping_thread_started = True
-    
-
-@app.route('/', methods=['GET', 'POST'])
-def index():
-    now = dt.now()
-    output = ""
-    if request.method == 'POST':
-        ip = request.form.get('ip')
-        if ip and validate_ip(ip):
-            output = ping_device(ip)
-        else:
-            output = "Invalid IP address"
-    return render_template('index.html', output=output, now = now)
+        print("Ping monitoring started")
 
 
-@app.route('/log', methods=['GET', 'POST'])
-def log():
-    return render_template('log.html', logs=list(logs_for_site))
-
-
-if __name__ == '__main__':
-    start_ping_monitoring()
-    app.run(debug = True, use_reloader=False)
+def get_logs():
+    """Возвращает текущие логи для отображения"""
+    return list(logs_for_site)
