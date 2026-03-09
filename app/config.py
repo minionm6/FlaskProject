@@ -3,7 +3,7 @@ from datetime import datetime as dt
 
 # Конфигурация приложения
 class Config:
-    # Настройки приложения
+    
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'dev-secret-key-change-in-production'
     
     # Настройки пинг-мониторинга
@@ -14,3 +14,7 @@ class Config:
     
     # Время запуска приложения
     APP_START_TIME = dt.now()
+
+    # Настройки базы данных SQLite
+    SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(os.path.dirname(__file__), '..', 'db1.db')
+    SQLALCHEMY_TRACK_MODIFICATIONS = False

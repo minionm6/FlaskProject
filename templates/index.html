@@ -1,71 +1,280 @@
+{% set full_height = True %}
 {% extends 'base.html' %}
 
 {% block title %}Home{% endblock %}
 
 {% block content %}
-<div class="row justify-content-center fade-in">
-    <div class="col-lg-8">
-        <div class="card card-dark mb-4">
-            <div class="card-header card-header-dark">
-                <h4 class="mb-0">
-                    <i class="bi bi-activity me-2"></i>Ping Diagnostic Tool
-                </h4>
+<div class="container-fluid h-100 d-flex fade-in p-0">
+    <!-- Левая панель со станциями (1/5 экрана) -->
+    <div class="stations-panel bg-dark border-end border-secondary" style="width: 20%; min-width: 250px; height: calc(100vh - 56px); overflow-y: auto;">
+        <div class="p-3">
+            <h5 class="text-white mb-3">
+                <i class="bi bi-hdd-stack me-2"></i>Станции
+                <span class="badge bg-secondary ms-2">{{ stations|length }}</span>
+            </h5>
+            
+            <!-- Список станций -->
+            <div class="list-group list-group-flush">
+                {% for station in stations %}
+                <a href="{{ url_for('main.index', station_id=station.id) }}" 
+                   class="list-group-item list-group-item-action bg-dark text-white border-secondary {% if selected_station and selected_station.id == station.id %}active-station{% endif %}"
+                   >
+                    
+                    <div class="d-flex align-items-center">
+                        <!-- Статус станции (онлайн/офлайн) -->
+                        <span class="me-2">
+                            {% if station.is_online %}
+                                <i class="bi bi-check-circle-fill text-success" style="font-size: 0.8rem;"></i>
+                            {% else %}
+                                <i class="bi bi-exclamation-circle-fill text-warning" style="font-size: 0.8rem;"></i>
+                            {% endif %}
+                        </span>
+                        
+                        <!-- Название станции -->
+                        <div class="flex-grow-1">
+                            <strong>{{ station.name }}</strong>
+                            <br>
+                            <small class="text-secondary">{{ station.ip_address }}</small>
+                        </div>
+                        
+                        <!-- Индикатор выбора -->
+                        {% if selected_station and selected_station.id == station.id %}
+                            <i class="bi bi-check2-circle text-white"></i>
+                        {% endif %}
+                    </div>
+                </a>
+                {% else %}
+                <div class="text-center text-secondary p-4">
+                    <i class="bi bi-hdd-stack fs-1 d-block mb-3"></i>
+                    <p>Нет добавленных станций</p>
+                </div>
+                {% endfor %}
             </div>
-            <div class="card-body p-4">
-                <p class="text-secondary mb-4">
-                    Enter an IP address to check its availability and network response time.
-                </p>
+            
+            <!-- Кнопка добавления станции (для примера) -->
+            <button class="btn btn-outline-primary w-100 mt-3" onclick="alert('Функция добавления станции будет реализована позже')">
+                <i class="bi bi-plus-circle me-2"></i>Добавить станцию
+            </button>
+        </div>
+    </div>
+    
+    <!-- Правая панель с контентом (4/5 экрана) -->
+    <div class="content-panel" style="width: 80%; height: calc(100vh - 56px); overflow-y: auto;">
+        {% if selected_station %}
+            <!-- Контент для выбранной станции -->
+            <div class="p-4">
+                <!-- Заголовок станции -->
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2 class="text-white">
+                        <i class="bi bi-wifi me-2"></i>{{ selected_station.name }}
+                        <small class="fs-6 text-secondary ms-2">{{ selected_station.ip_address }}</small>
+                    </h2>
+                    <span class="badge {% if selected_station.is_online %}bg-success{% else %}bg-warning{% endif %} px-3 py-2">
+                        {% if selected_station.is_online %}🟢 Онлайн{% else %}🟡 Офлайн{% endif %}
+                    </span>
+                </div>
                 
-                <form method="post" class="row g-3">
-                    <div class="col-md-8">
-                        <div class="input-group">
-                            <span class="input-group-text bg-dark border-secondary">
-                                <i class="bi bi-ip"></i>
-                            </span>
-                            <input type="text" 
-                                   name="ip" 
-                                   class="form-control form-control-dark" 
-                                   placeholder="e.g., 192.168.1.1 or 8.8.8.8"
-                                   value="{{ request.form.ip if request.form.ip else '10.10.0.187' }}"
-                                   required>
+                <!-- Графики и информация -->
+                <div class="row">
+                    <!-- График пингов -->
+                    <div class="col-12 mb-4">
+                        <div class="card card-dark">
+                            <div class="card-header card-header-dark">
+                                <h5 class="mb-0">
+                                    <i class="bi bi-graph-up me-2"></i>Время отклика (мс)
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <canvas id="pingChart" style="width: 100%; height: 300px;"></canvas>
+                            </div>
                         </div>
                     </div>
-                    <div class="col-md-4">
-                        <button type="submit" class="btn btn-primary w-100">
-                            <i class="bi bi-send-check me-2"></i>Start Ping
-                        </button>
-                    </div>
-                </form>
-
-                {% if output %}
-                <div class="mt-4 pt-3 border-top border-secondary">
-                    <h6 class="text-white mb-3">
-                        <i class="bi bi-clipboard-check me-2"></i>Results
-                    </h6>
-                    <div class="log-container p-3">
-                        <div class="log-entry">
-                            <div class="d-flex justify-content-between mb-2">
-                                <span class="log-time">
-                                    <i class="bi bi-clock me-1"></i>{{ now.strftime('%H:%M:%S') if now else '' }}
-                                </span>
-                                <span class="badge 
-                                    {% if 'REACHABLE' in output %}bg-success
-                                    {% elif 'UNREACHABLE' in output %}bg-warning
-                                    {% else %}bg-danger{% endif %}">
-                                    {{ output.split(']')[0][1:] if ']' in output else 'INFO' }}
-                                </span>
+                    
+                    <!-- Статистика -->
+                    <div class="col-md-6 mb-4">
+                        <div class="card card-dark h-100">
+                            <div class="card-header card-header-dark">
+                                <h5 class="mb-0">
+                                    <i class="bi bi-pie-chart me-2"></i>Статистика
+                                </h5>
                             </div>
-                            <code class="d-block mt-2 {% if 'REACHABLE' in output %}log-success{% elif 'UNREACHABLE' in output %}log-warning{% else %}log-error{% endif %}">
-                                {{ output }}
-                            </code>
+                            <div class="card-body">
+                                <table class="table table-dark table-borderless">
+                                    <tr>
+                                        <td>Средний пинг:</td>
+                                        <td class="text-end"><strong>{{ selected_station.avg_ping|default('—') }} мс</strong></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Мин. пинг:</td>
+                                        <td class="text-end"><strong>{{ selected_station.min_ping|default('—') }} мс</strong></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Макс. пинг:</td>
+                                        <td class="text-end"><strong>{{ selected_station.max_ping|default('—') }} мс</strong></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Пакетов потеряно:</td>
+                                        <td class="text-end"><strong>{{ selected_station.packet_loss|default('0') }}%</strong></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Проверок:</td>
+                                        <td class="text-end"><strong>{{ selected_station.checks_count|default('0') }}</strong></td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Последние пинги -->
+                    <div class="col-md-6 mb-4">
+                        <div class="card card-dark h-100">
+                            <div class="card-header card-header-dark">
+                                <h5 class="mb-0">
+                                    <i class="bi bi-clock-history me-2"></i>Последние проверки
+                                </h5>
+                            </div>
+                            <div class="card-body p-0">
+                                <div class="list-group list-group-flush">
+                                    {% for ping in selected_station.recent_pings|default([]) %}
+                                    <div class="list-group-item bg-dark text-white border-secondary">
+                                        <div class="d-flex justify-content-between">
+                                            <span>
+                                                <i class="bi bi-clock me-2 text-secondary"></i>
+                                                {{ ping.time }}
+                                            </span>
+                                            <span class="badge {% if ping.success %}bg-success{% else %}bg-danger{% endif %}">
+                                                {{ ping.value }} мс
+                                            </span>
+                                        </div>
+                                    </div>
+                                    {% else %}
+                                    <div class="text-center text-secondary p-4">
+                                        <i class="bi bi-clock-history fs-1 d-block mb-3"></i>
+                                        <p>Нет данных о пингах</p>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
-                {% endif %}
             </div>
-        </div>
+            
+            {% if selected_station.ping_history %}
+            <!-- Скрипт для графика -->
+            
+            {% endif %}
+            
+        {% else %}
+            <!-- Контент когда станция не выбрана -->
+            <div class="row justify-content-center fade-in m-0 h-100 align-items-center">
+                <div class="col-lg-8">
+                    <div class="card card-dark mb-4">
+                        <div class="card-header card-header-dark">
+                            <h4 class="mb-0">
+                                <i class="bi bi-activity me-2"></i>Ping Diagnostic Tool
+                            </h4>
+                        </div>
+                        <div class="card-body p-4">
+                            <p class="text-secondary mb-4">
+                                Enter an IP address to check its availability and network response time.
+                            </p>
+                            
+                            <form method="post" class="row g-3">
+                                <div class="col-md-8">
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-dark border-secondary">
+                                            <i class="bi bi-ip"></i>
+                                        </span>
+                                        <input type="text" 
+                                               name="ip" 
+                                               class="form-control form-control-dark" 
+                                               placeholder="e.g., 192.168.1.1 or 8.8.8.8"
+                                               value="{{ request.form.ip if request.form.ip else '10.10.0.187' }}"
+                                               required>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <button type="submit" class="btn btn-primary w-100">
+                                        <i class="bi bi-send-check me-2"></i>Start Ping
+                                    </button>
+                                </div>
+                            </form>
 
-        
+                            {% if output %}
+                            <div class="mt-4 pt-3 border-top border-secondary">
+                                <h6 class="text-white mb-3">
+                                    <i class="bi bi-clipboard-check me-2"></i>Results
+                                </h6>
+                                <div class="log-container p-3">
+                                    <div class="log-entry">
+                                        <div class="d-flex justify-content-between mb-2">
+                                            <span class="log-time">
+                                                <i class="bi bi-clock me-1"></i>{{ now.strftime('%H:%M:%S') if now else '' }}
+                                            </span>
+                                            <span class="badge 
+                                                {% if 'REACHABLE' in output %}bg-success
+                                                {% elif 'UNREACHABLE' in output %}bg-warning
+                                                {% else %}bg-danger{% endif %}">
+                                                {{ output.split(']')[0][1:] if ']' in output else 'INFO' }}
+                                            </span>
+                                        </div>
+                                        <code class="d-block mt-2 {% if 'REACHABLE' in output %}log-success{% elif 'UNREACHABLE' in output %}log-warning{% else %}log-error{% endif %}">
+                                            {{ output }}
+                                        </code>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
     </div>
 </div>
+
+<!-- Добавим немного кастомных стилей -->
+<style>
+    .stations-panel {
+        background-color: #1a1e24;
+    }
+    
+    .stations-panel .list-group-item-action:hover {
+        background-color: #2c3138 !important;
+    }
+    
+    .stations-panel .active-station {
+        background-color: #0d6efd !important;
+        border-color: #0d6efd !important;
+    }
+    
+    .stations-panel .active-station small {
+        color: rgba(255,255,255,0.8) !important;
+    }
+    
+    /* Убираем стандартные отступы у контейнера */
+    .container-fluid.p-0 {
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+    }
+    
+    /* Стилизация скроллбара */
+    .stations-panel::-webkit-scrollbar {
+        width: 8px;
+    }
+    
+    .stations-panel::-webkit-scrollbar-track {
+        background: #1a1e24;
+    }
+    
+    .stations-panel::-webkit-scrollbar-thumb {
+        background: #3a3f48;
+        border-radius: 4px;
+    }
+    
+    .stations-panel::-webkit-scrollbar-thumb:hover {
+        background: #4a4f58;
+    }
+</style>
 {% endblock %}

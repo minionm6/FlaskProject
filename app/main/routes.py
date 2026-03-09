@@ -1,10 +1,12 @@
 from flask import render_template, request
+from flask_login import login_required, current_user
 from datetime import datetime as dt
 from app.main import bp
 from app.utils.ping_monitor import ping_device, validate_ip, get_logs
 
 
 @bp.route('/', methods=['GET', 'POST'])
+@login_required
 def index():
     """Главная страница с формой пингования"""
     now = dt.now()
@@ -24,4 +26,4 @@ def index():
 def log():
     """Страница с логами пинг-мониторинга"""
     logs = get_logs()
-    return render_template('log.html', logs=logs)
+    return render_template('log.html', logs=logs, user=current_user)

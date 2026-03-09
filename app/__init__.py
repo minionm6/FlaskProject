@@ -1,9 +1,13 @@
 from flask import Flask
+from flask_sqlalchemy import SQLAlchemy
+from flask_login import LoginManager
 from app.config import Config
 from app.utils.ping_monitor import start_ping_monitoring
-from app.main import bp as main_bp
-from app.auth import bp as auth_bp
 
+
+
+db = SQLAlchemy()
+login_manager = LoginManager()
 
 def create_app():
     """Фабрика создания приложения Flask"""
@@ -14,14 +18,30 @@ def create_app():
     # Загрузка конфигурации
     app.config.from_object(Config)
     
-    # Инициализация расширений (если будут)
+    # Инициализация базы данных
+    db.init_app(app)
+
+    # Логин менеджер для проверки регистрации
+    login_manager.init_app(app)
+    login_manager.login_view = 'auth.login'
     # ...
     
     # Регистрация blueprint'ов
-    app.register_blueprint(main_bp)
+    from app.auth import bp as auth_bp
     app.register_blueprint(auth_bp, url_prefix='/auth')
+
+    from app.main import bp as main_bp
+    app.register_blueprint(main_bp)
+    
     
     # Запуск мониторинга пинга
     start_ping_monitoring()
     
     return app
+
+
+@login_manager.user_loader
+def load_user(user_id):
+    """Возвращает объект пользователя по его id"""
+    from app.models import User
+    return User.query.get(int(user_id))
