@@ -4,31 +4,61 @@
 {% block title %}Вход{% endblock %}
 
 {% block content %}
-<div class="col-md-6 col-lg-5">
-    <div class="card bg-dark border-secondary">
-        <div class="card-header border-secondary">
-            <h5 class="mb-0"><i class="bi bi-box-arrow-in-right me-2" aria-hidden="true"></i>Вход</h5>
+
+<div class="container auth-page">
+    <div class="col-md-6 col-lg-5">
+
+        <div class="card bg-dark border-secondary">
+            <div class="card-header border-secondary">
+                <h5 class="mb-0">
+                    <i class="bi bi-box-arrow-in-right me-2"></i>Вход
+                </h5>
+            </div>
+
+            <div class="card-body">
+                <form method="post">
+
+                    <div class="mb-3">
+                        <label class="form-label">
+                            <i class="bi bi-person me-1"></i>Имя пользователя
+                        </label>
+                        <input type="text"
+                               class="form-control bg-dark text-light border-secondary"
+                               name="username"
+                               required
+                               autocomplete="username">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">
+                            <i class="bi bi-lock me-1"></i>Пароль
+                        </label>
+                        <input type="password"
+                               class="form-control bg-dark text-light border-secondary"
+                               name="password"
+                               required
+                               autocomplete="current-password">
+                    </div>
+
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" class="form-check-input" name="remember">
+                        <label class="form-check-label">Запомнить меня</label>
+                    </div>
+
+                    <button class="btn btn-primary w-100">
+                        <i class="bi bi-box-arrow-in-right me-2"></i>Войти
+                    </button>
+
+                </form>
+            </div>
         </div>
-        <div class="card-body">
-            <form method="post">
-                <div class="mb-3">
-                    <label for="username" class="form-label"><i class="bi bi-person me-1" aria-hidden="true"></i>Имя пользователя</label>
-                    <input type="text" class="form-control form-control-dark" id="username" name="username" required autocomplete="username" placeholder="Введите имя пользователя">
-                </div>
-                <div class="mb-3">
-                    <label for="password" class="form-label"><i class="bi bi-lock me-1" aria-hidden="true"></i>Пароль</label>
-                    <input type="password" class="form-control form-control-dark" id="password" name="password" required autocomplete="current-password" placeholder="Введите пароль">
-                </div>
-                <div class="mb-3 form-check">
-                    <input type="checkbox" class="form-check-input" id="remember" name="remember">
-                    <label class="form-check-label" for="remember">Запомнить меня</label>
-                </div>
-                <button type="submit" class="btn btn-primary w-100"><i class="bi bi-box-arrow-in-right me-2" aria-hidden="true"></i>Войти</button>
-            </form>
-        </div>
+
+        <p class="text-center text-secondary mt-3">
+            Нет аккаунта?
+            <a href="{{ url_for('auth.register') }}">Зарегистрируйтесь</a>
+        </p>
+
     </div>
-    <p class="text-center text-secondary mt-3">
-        Нет аккаунта? <a href="{{ url_for('auth.register') }}" class="text-decoration-none">Зарегистрируйтесь</a>
-    </p>
 </div>
+
 {% endblock %}

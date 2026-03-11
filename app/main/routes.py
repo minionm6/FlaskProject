@@ -8,22 +8,20 @@ from app.utils.ping_monitor import ping_device, validate_ip, get_logs
 @bp.route('/', methods=['GET', 'POST'])
 @login_required
 def index():
-    """Главная страница с формой пингования"""
+    """Главная страница со станциями"""
+    return render_template('index.html')
+
+
+@bp.route('/log', methods=['GET', 'POST'])
+def log():
+    """Страница с формой пинга и пинг-мониторинга"""
     now = dt.now()
     output = ""
-    
     if request.method == 'POST':
         ip = request.form.get('ip')
         if ip and validate_ip(ip):
             output = ping_device(ip)
         else:
             output = "Invalid IP address"
-    
-    return render_template('index.html', output=output, now=now)
-
-
-@bp.route('/log')
-def log():
-    """Страница с логами пинг-мониторинга"""
     logs = get_logs()
-    return render_template('log.html', logs=logs, user=current_user)
+    return render_template('log.html', logs=logs, user=current_user, output=output, now=now)

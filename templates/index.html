@@ -1,238 +1,159 @@
-{% set full_height = True %}
+{% set full_height = selected_station is not none %}
 {% extends 'base.html' %}
 
-{% block title %}Home{% endblock %}
+{% block title %}Метеомониторинг — Главная{% endblock %}
 
 {% block content %}
-<div class="container-fluid h-100 d-flex fade-in p-0">
-    <!-- Левая панель со станциями (1/5 экрана) -->
-    <div class="stations-panel bg-dark border-end border-secondary" style="width: 20%; min-width: 250px; height: calc(100vh - 56px); overflow-y: auto;">
-        <div class="p-3">
-            <h5 class="text-white mb-3">
+<div class="row g-0 h-100">
+    <!-- Левая панель станций -->
+    <div class="col-auto bg-dark border-end border-secondary" style="width: 260px;">
+        <div style="height: 100%; overflow-y: auto; padding: 1rem;">
+            <h5 class="text-white mb-4 d-flex align-items-center">
                 <i class="bi bi-hdd-stack me-2"></i>Станции
                 <span class="badge bg-secondary ms-2">{{ stations|length }}</span>
             </h5>
-            
-            <!-- Список станций -->
+
             <div class="list-group list-group-flush">
                 {% for station in stations %}
                 <a href="{{ url_for('main.index', station_id=station.id) }}" 
-                   class="list-group-item list-group-item-action bg-dark text-white border-secondary {% if selected_station and selected_station.id == station.id %}active-station{% endif %}"
-                   >
-                    
+                   class="list-group-item list-group-item-action bg-dark text-white border-secondary {% if selected_station and selected_station.id == station.id %}active{% endif %}">
                     <div class="d-flex align-items-center">
-                        <!-- Статус станции (онлайн/офлайн) -->
-                        <span class="me-2">
-                            {% if station.is_online %}
-                                <i class="bi bi-check-circle-fill text-success" style="font-size: 0.8rem;"></i>
+                        <span class="me-3">
+                            {% if station.last_seen and ((now - station.last_seen).total_seconds() < 300 if now and station.last_seen else false) %}
+                                <i class="bi bi-check-circle-fill text-success fs-5"></i>
                             {% else %}
-                                <i class="bi bi-exclamation-circle-fill text-warning" style="font-size: 0.8rem;"></i>
+                                <i class="bi bi-exclamation-circle-fill text-warning fs-5"></i>
                             {% endif %}
                         </span>
-                        
-                        <!-- Название станции -->
                         <div class="flex-grow-1">
                             <strong>{{ station.name }}</strong>
-                            <br>
-                            <small class="text-secondary">{{ station.ip_address }}</small>
+                            <div class="small text-secondary mt-1">{{ station.ip_address }}</div>
+                            <div class="small text-muted mt-1">
+                                {{ station.last_seen.strftime('%H:%M') if station.last_seen else 'никогда' }}
+                            </div>
                         </div>
-                        
-                        <!-- Индикатор выбора -->
-                        {% if selected_station and selected_station.id == station.id %}
-                            <i class="bi bi-check2-circle text-white"></i>
-                        {% endif %}
                     </div>
                 </a>
                 {% else %}
-                <div class="text-center text-secondary p-4">
-                    <i class="bi bi-hdd-stack fs-1 d-block mb-3"></i>
+                <div class="text-center text-secondary py-5">
+                    <i class="bi bi-cloud-slash fs-1 d-block mb-3"></i>
                     <p>Нет добавленных станций</p>
                 </div>
                 {% endfor %}
             </div>
-            
-            <!-- Кнопка добавления станции (для примера) -->
-            <button class="btn btn-outline-primary w-100 mt-3" onclick="alert('Функция добавления станции будет реализована позже')">
-                <i class="bi bi-plus-circle me-2"></i>Добавить станцию
+
+            {% if current_user is operator_or_admin %}
+            <button class="btn btn-outline-primary w-100 mt-4">
+                <i class="bi bi-plus-lg me-2"></i>Добавить станцию
             </button>
+            {% endif %}
         </div>
     </div>
-    
-    <!-- Правая панель с контентом (4/5 экрана) -->
-    <div class="content-panel" style="width: 80%; height: calc(100vh - 56px); overflow-y: auto;">
-        {% if selected_station %}
-            <!-- Контент для выбранной станции -->
-            <div class="p-4">
-                <!-- Заголовок станции -->
-                <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h2 class="text-white">
-                        <i class="bi bi-wifi me-2"></i>{{ selected_station.name }}
-                        <small class="fs-6 text-secondary ms-2">{{ selected_station.ip_address }}</small>
-                    </h2>
-                    <span class="badge {% if selected_station.is_online %}bg-success{% else %}bg-warning{% endif %} px-3 py-2">
-                        {% if selected_station.is_online %}🟢 Онлайн{% else %}🟡 Офлайн{% endif %}
-                    </span>
-                </div>
-                
-                <!-- Графики и информация -->
-                <div class="row">
-                    <!-- График пингов -->
-                    <div class="col-12 mb-4">
-                        <div class="card card-dark">
-                            <div class="card-header card-header-dark">
-                                <h5 class="mb-0">
-                                    <i class="bi bi-graph-up me-2"></i>Время отклика (мс)
-                                </h5>
-                            </div>
-                            <div class="card-body">
-                                <canvas id="pingChart" style="width: 100%; height: 300px;"></canvas>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Статистика -->
-                    <div class="col-md-6 mb-4">
-                        <div class="card card-dark h-100">
-                            <div class="card-header card-header-dark">
-                                <h5 class="mb-0">
-                                    <i class="bi bi-pie-chart me-2"></i>Статистика
-                                </h5>
-                            </div>
-                            <div class="card-body">
-                                <table class="table table-dark table-borderless">
-                                    <tr>
-                                        <td>Средний пинг:</td>
-                                        <td class="text-end"><strong>{{ selected_station.avg_ping|default('—') }} мс</strong></td>
-                                    </tr>
-                                    <tr>
-                                        <td>Мин. пинг:</td>
-                                        <td class="text-end"><strong>{{ selected_station.min_ping|default('—') }} мс</strong></td>
-                                    </tr>
-                                    <tr>
-                                        <td>Макс. пинг:</td>
-                                        <td class="text-end"><strong>{{ selected_station.max_ping|default('—') }} мс</strong></td>
-                                    </tr>
-                                    <tr>
-                                        <td>Пакетов потеряно:</td>
-                                        <td class="text-end"><strong>{{ selected_station.packet_loss|default('0') }}%</strong></td>
-                                    </tr>
-                                    <tr>
-                                        <td>Проверок:</td>
-                                        <td class="text-end"><strong>{{ selected_station.checks_count|default('0') }}</strong></td>
-                                    </tr>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Последние пинги -->
-                    <div class="col-md-6 mb-4">
-                        <div class="card card-dark h-100">
-                            <div class="card-header card-header-dark">
-                                <h5 class="mb-0">
-                                    <i class="bi bi-clock-history me-2"></i>Последние проверки
-                                </h5>
-                            </div>
-                            <div class="card-body p-0">
-                                <div class="list-group list-group-flush">
-                                    {% for ping in selected_station.recent_pings|default([]) %}
-                                    <div class="list-group-item bg-dark text-white border-secondary">
-                                        <div class="d-flex justify-content-between">
-                                            <span>
-                                                <i class="bi bi-clock me-2 text-secondary"></i>
-                                                {{ ping.time }}
-                                            </span>
-                                            <span class="badge {% if ping.success %}bg-success{% else %}bg-danger{% endif %}">
-                                                {{ ping.value }} мс
-                                            </span>
-                                        </div>
-                                    </div>
-                                    {% else %}
-                                    <div class="text-center text-secondary p-4">
-                                        <i class="bi bi-clock-history fs-1 d-block mb-3"></i>
-                                        <p>Нет данных о пингах</p>
-                                    </div>
-                                    {% endfor %}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            {% if selected_station.ping_history %}
-            <!-- Скрипт для графика -->
-            
-            {% endif %}
-            
-        {% else %}
-            <!-- Контент когда станция не выбрана -->
-            <div class="row justify-content-center fade-in m-0 h-100 align-items-center">
-                <div class="col-lg-8">
-                    <div class="card card-dark mb-4">
-                        <div class="card-header card-header-dark">
-                            <h4 class="mb-0">
-                                <i class="bi bi-activity me-2"></i>Ping Diagnostic Tool
-                            </h4>
-                        </div>
-                        <div class="card-body p-4">
-                            <p class="text-secondary mb-4">
-                                Enter an IP address to check its availability and network response time.
-                            </p>
-                            
-                            <form method="post" class="row g-3">
-                                <div class="col-md-8">
-                                    <div class="input-group">
-                                        <span class="input-group-text bg-dark border-secondary">
-                                            <i class="bi bi-ip"></i>
-                                        </span>
-                                        <input type="text" 
-                                               name="ip" 
-                                               class="form-control form-control-dark" 
-                                               placeholder="e.g., 192.168.1.1 or 8.8.8.8"
-                                               value="{{ request.form.ip if request.form.ip else '10.10.0.187' }}"
-                                               required>
-                                    </div>
-                                </div>
-                                <div class="col-md-4">
-                                    <button type="submit" class="btn btn-primary w-100">
-                                        <i class="bi bi-send-check me-2"></i>Start Ping
-                                    </button>
-                                </div>
-                            </form>
 
-                            {% if output %}
-                            <div class="mt-4 pt-3 border-top border-secondary">
-                                <h6 class="text-white mb-3">
-                                    <i class="bi bi-clipboard-check me-2"></i>Results
-                                </h6>
-                                <div class="log-container p-3">
-                                    <div class="log-entry">
-                                        <div class="d-flex justify-content-between mb-2">
-                                            <span class="log-time">
-                                                <i class="bi bi-clock me-1"></i>{{ now.strftime('%H:%M:%S') if now else '' }}
-                                            </span>
-                                            <span class="badge 
-                                                {% if 'REACHABLE' in output %}bg-success
-                                                {% elif 'UNREACHABLE' in output %}bg-warning
-                                                {% else %}bg-danger{% endif %}">
-                                                {{ output.split(']')[0][1:] if ']' in output else 'INFO' }}
-                                            </span>
-                                        </div>
-                                        <code class="d-block mt-2 {% if 'REACHABLE' in output %}log-success{% elif 'UNREACHABLE' in output %}log-warning{% else %}log-error{% endif %}">
-                                            {{ output }}
-                                        </code>
-                                    </div>
-                                </div>
-                            </div>
-                            {% endif %}
+    <!-- Правая часть -->
+    <div class="col bg-gradient-dark h-100" style="overflow-y: auto;">
+        {% if selected_station %}
+        <div class="p-4">
+            <h3 class="text-white mb-4">
+                <i class="bi bi-thermometer-half me-2 text-info"></i>{{ selected_station.name }}
+                <small class="text-secondary ms-3">{{ selected_station.ip_address }}</small>
+            </h3>
+
+            <div class="row g-3 mb-4">
+                <div class="col-md-3">
+                    <div class="card bg-dark border-secondary text-center">
+                        <div class="card-body">
+                            <h6 class="text-muted">Температура</h6>
+                            <h2 class="text-white" id="current-temp">—</h2>
+                            <small class="text-info">°C</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-dark border-secondary text-center">
+                        <div class="card-body">
+                            <h6 class="text-muted">Влажность</h6>
+                            <h2 class="text-white" id="current-hum">—</h2>
+                            <small class="text-info">%</small>
                         </div>
                     </div>
                 </div>
             </div>
+
+            <div class="card bg-dark border-secondary">
+                <div class="card-header">
+                    <h5 class="mb-0 text-white"><i class="bi bi-graph-up me-2"></i>Показания</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="weatherChart" height="220"></canvas>
+                </div>
+            </div>
+        </div>
+
+        {% else %}
+        <div class="d-flex flex-column justify-content-center align-items-center h-100 text-center text-secondary">
+            <i class="bi bi-cloud-fog fs-1 mb-4"></i>
+            <h4>Выберите станцию слева</h4>
+        </div>
         {% endif %}
     </div>
 </div>
 
+<!-- Передача station_id -->
+<div data-station-id="{{ selected_station.id if selected_station else '' }}" style="display:none;"></div>
 
+<script>
+    const stationId = document.querySelector('[data-station-id]')?.dataset.stationId 
+        ? parseInt(document.querySelector('[data-station-id]').dataset.stationId) 
+        : null;
+
+    let weatherChart = null;
+
+    async function loadStationData() {
+        if (!stationId) return;
+        try {
+            const resp = await fetch(`/api/stations/${stationId}/measurements?limit=200`);
+            if (!resp.ok) throw new Error();
+            const data = await resp.json();
+
+            if (data.length > 0) {
+                const last = data[0];
+                document.getElementById('current-temp').textContent = last.temperature?.toFixed(1) || '—';
+                document.getElementById('current-hum').textContent = last.humidity?.toFixed(1) || '—';
+            }
+
+            const ctx = document.getElementById('weatherChart')?.getContext('2d');
+            if (!ctx) return;
+
+            const labels = data.map(m => new Date(m.timestamp).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}));
+            const temps = data.map(m => m.temperature);
+            const hums = data.map(m => m.humidity);
+
+            if (weatherChart) weatherChart.destroy();
+
+            weatherChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels.reverse(),
+                    datasets: [
+                        {label: 'Температура (°C)', data: temps.reverse(), borderColor: '#0dcaf0', tension: 0.3, yAxisID: 'y'},
+                        {label: 'Влажность (%)', data: hums.reverse(), borderColor: '#198754', tension: 0.3, yAxisID: 'y2'}
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: { position: 'left', title: {display: true, text: '°C'} },
+                        y2: { position: 'right', title: {display: true, text: '%'}, grid: {drawOnChartArea: false} }
+                    }
+                }
+            });
+        } catch (e) {
+            console.error(e);
+        }
+    }
+
+    if (stationId) loadStationData();
+    setInterval(() => { if (stationId) loadStationData(); }, 60000);
+</script>
 {% endblock %}

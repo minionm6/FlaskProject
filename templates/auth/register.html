@@ -5,38 +5,59 @@
 
 {% block content %}
 
-    <div class="col-md-6 col-lg-5">
-        <div class="card bg-dark border-secondary">
-            <div class="card-header border-secondary">
-                <h5 class="mb-0">
-                    <i class="bi bi-person-plus-fill me-2"></i>Регистрация
-                </h5>
+<div class="container auth-page">
+    
+        <div class="col-md-6 col-lg-5">
+
+            <div class="card bg-dark border-secondary">
+                <div class="card-header border-secondary">
+                    <h5 class="mb-0">
+                        <i class="bi bi-person-plus-fill me-2"></i>Регистрация
+                    </h5>
+                </div>
+
+                <div class="card-body">
+
+                    <form method="post">
+
+                        <div class="mb-3">
+                            <label class="form-label">
+                                <i class="bi bi-person me-1"></i>Имя пользователя
+                            </label>
+                            <input type="text"
+                                   class="form-control bg-dark text-light border-secondary"
+                                   name="username"
+                                   required autocomplete="username">
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">
+                                <i class="bi bi-lock me-1"></i>Пароль
+                            </label>
+                            <input type="password"
+                                   class="form-control bg-dark text-light border-secondary"
+                                   name="password"
+                                   required autocomplete="new-password">
+                        </div>
+
+                        <button class="btn btn-primary w-100">
+                            <i class="bi bi-box-arrow-in-right me-2"></i>Зарегистрироваться
+                        </button>
+
+                    </form>
+
+                </div>
             </div>
-            <div class="card-body">
-                <form method="post">
-                    <div class="mb-3">
-                        <label for="username" class="form-label">
-                            <i class="bi bi-person me-1"></i>Имя пользователя
-                        </label>
-                        <input type="text" class="form-control bg-dark text-light border-secondary" 
-                               id="username" name="username" required autocomplete="username">
-                    </div>
-                    <div class="mb-3">
-                        <label for="password" class="form-label">
-                            <i class="bi bi-lock me-1"></i>Пароль
-                        </label>
-                        <input type="password" class="form-control bg-dark text-light border-secondary" 
-                               id="password" name="password" required autocomplete="new-password">
-                    </div>
-                    <button type="submit" class="btn btn-primary w-100">
-                        <i class="bi bi-box-arrow-in-right me-2"></i>Зарегистрироваться
-                    </button>
-                </form>
-            </div>
+
+            <p class="text-center text-secondary mt-3">
+                Уже есть аккаунт?
+                <a href="{{ url_for('auth.login') }}" class="text-decoration-none">
+                    Войдите
+                </a>
+            </p>
+
         </div>
-        <p class="text-center text-secondary mt-3">
-            Уже есть аккаунт? <a href="{{ url_for('auth.login') }}" class="text-decoration-none">Войдите</a>
-        </p>
-    </div>
+    
+</div>
 
 {% endblock %}

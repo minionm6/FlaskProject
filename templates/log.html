@@ -5,6 +5,66 @@
 
 {% block content %}
 <div class="row fade-in">
+    
+    <div class="col-12 mb-4">
+        <div class="card card-dark">
+            <div class="card-header card-header-dark">
+                <h5 class="mb-0">
+                    <i class="bi bi-search me-2"></i>Ping Diagnostic Tool
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="post" class="row g-3 align-items-end">
+                    <div class="col-md-7">
+                        <div class="input-group">
+                            <span class="input-group-text bg-dark border-secondary">
+                                <i class="bi bi-globe"></i>
+                            </span>
+                            <input type="text" 
+                                   name="ip" 
+                                   class="form-control form-control-dark" 
+                                   placeholder="e.g., 192.168.1.1 or 8.8.8.8"
+                                   value="{{ request.form.ip if request.form.ip else '10.10.0.187' }}"
+                                   required>
+                        </div>
+                    </div>
+                    <div class="col-md-5">
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="bi bi-send-check me-2"></i>Запустить пинг
+                        </button>
+                    </div>
+                </form>
+
+                {% if output %}
+                <div class="mt-4 pt-3 border-top border-secondary">
+                    <h6 class="text-white mb-3">
+                        <i class="bi bi-clipboard-check me-2"></i>Результат
+                    </h6>
+                    <div class="log-container p-3 bg-black rounded">
+                        <div class="log-entry">
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="log-time">
+                                    <i class="bi bi-clock me-1"></i>{{ now.strftime('%H:%M:%S') if now else '' }}
+                                </span>
+                                <span class="badge 
+                                    {% if 'REACHABLE' in output %}bg-success
+                                    {% elif 'UNREACHABLE' in output %}bg-warning
+                                    {% else %}bg-danger{% endif %}">
+                                    {{ output.split(']')[0][1:] if ']' in output else 'INFO' }}
+                                </span>
+                            </div>
+                            <code class="d-block mt-2 {% if 'REACHABLE' in output %}log-success{% elif 'UNREACHABLE' in output %}log-warning{% else %}log-error{% endif %}">
+                                {{ output }}
+                            </code>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+   
     <div class="col-12">
         <div class="card card-dark">
             <div class="card-header card-header-dark d-flex justify-content-between align-items-center">
@@ -26,12 +86,10 @@
                         {% for log in logs %}
                         <div class="log-entry">
                             <div class="d-flex justify-content-between align-items-start mb-2">
-                                <div>
-                                    <span class="log-time">
-                                        <i class="bi bi-calendar-event me-1"></i>
-                                        {{ log.split('Time - ')[1].split('\n')[0] if 'Time -' in log else 'N/A' }}
-                                    </span>
-                                </div>
+                                <span class="log-time">
+                                    <i class="bi bi-calendar-event me-1"></i>
+                                    {{ log.split('Time - ')[1].split('\n')[0] if 'Time -' in log else 'N/A' }}
+                                </span>
                                 {% if 'REACHABLE' in log %}
                                     <span class="badge bg-success">Online</span>
                                 {% elif 'UNREACHABLE' in log %}
