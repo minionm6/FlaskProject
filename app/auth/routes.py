@@ -1,6 +1,6 @@
 from flask import render_template, redirect, url_for, flash, request
 from app import db
-from app.models import User
+from app.models import User, Role
 from flask_login import login_user, logout_user, login_required
 from app.auth import bp
 
@@ -37,8 +37,13 @@ def register():
             flash('Логин уже используется')
             return redirect(url_for('auth.register'))
 
+        viewer_role = Role.query.filter_by(name='viewer').first()
+        if not viewer_role:
+            flash('Роль viewer не найдена')
+            return redirect(url_for('auth.register'))
+        
         # Создание пользователя
-        new_user = User(username=username)
+        new_user = User(username=username, role=viewer_role)
         new_user.set_password(password)
         db.session.add(new_user)
         db.session.commit()

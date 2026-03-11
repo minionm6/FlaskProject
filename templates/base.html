@@ -41,15 +41,16 @@
                             <i class="bi bi-clock-history me-1" aria-hidden="true"></i> Ping Logs
                         </a>
                     </li>
-                    <li class="nav-item">
-                        
-                        <a class="nav-link" href="#">
-                            <i class="bi bi-gear me-1" aria-hidden="true"></i> Settings
-                        </a>
-                    </li>
-
-                    <!-- Блок пользователя -->
                     {% if current_user.is_authenticated %}
+                        {% if current_user is admin %}
+                            <li class="nav-item">
+                                <a class="nav-link" href="#">
+                                    <i class="bi bi-gear me-1" aria-hidden="true"></i> Settings
+                                </a>
+                            </li>
+                        {% endif %}
+                    <!-- Блок пользователя -->
+                    
                         <li class="nav-item">
                             <span class="nav-link text-light">
                                 <i class="bi bi-person-circle me-1" aria-hidden="true"></i>{{ current_user.username }}

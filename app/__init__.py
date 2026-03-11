@@ -1,13 +1,31 @@
 from flask import Flask
-from flask_sqlalchemy import SQLAlchemy
+from app.models import db
 from flask_login import LoginManager
 from app.config import Config
 from app.utils.ping_monitor import start_ping_monitoring
+from app.utils.db_init import create_admin, create_roles
 
 
 
-db = SQLAlchemy()
+
+def init_template_filters(app):
+
+    @app.template_test('admin')
+    def is_admin(user):
+        if not user or not user.is_authenticated:
+            return False
+        return user.role and user.role.name == "admin"
+
+    @app.template_test('operator_or_admin')
+    def is_operator_or_admin(user):
+        if not user or not user.is_authenticated:
+            return False
+        return user.role and user.role.name in ("admin", "operator")
+
+
+
 login_manager = LoginManager()
+
 
 def create_app():
     """Фабрика создания приложения Flask"""
@@ -33,6 +51,12 @@ def create_app():
     from app.main import bp as main_bp
     app.register_blueprint(main_bp)
     
+    with app.app_context():
+        db.create_all()        
+        create_roles()         
+        create_admin() 
+    
+    init_template_filters(app)
     
     # Запуск мониторинга пинга
     start_ping_monitoring()
