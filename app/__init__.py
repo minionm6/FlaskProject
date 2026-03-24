@@ -3,7 +3,7 @@ from app.models import db
 from flask_login import LoginManager
 from app.config import Config
 from app.utils.ping_monitor import start_ping_monitoring
-from app.utils.db_init import create_admin, create_roles
+from app.utils.db_init import create_admin, create_roles, create_equipments, create_statuses
 
 
 
@@ -55,6 +55,8 @@ def create_app():
         db.create_all()        
         create_roles()         
         create_admin() 
+        create_statuses()
+        create_equipments() 
     
     init_template_filters(app)
     

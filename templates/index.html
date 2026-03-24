@@ -19,7 +19,7 @@
                    class="list-group-item list-group-item-action bg-dark text-white border-secondary {% if selected_station and selected_station.id == station.id %}active{% endif %}">
                     <div class="d-flex align-items-center">
                         <span class="me-3">
-                            {% if station.last_seen and ((now - station.last_seen).total_seconds() < 300 if now and station.last_seen else false) %}
+                            {% if station.status and station.status.name == 'Активна' %}
                                 <i class="bi bi-check-circle-fill text-success fs-5"></i>
                             {% else %}
                                 <i class="bi bi-exclamation-circle-fill text-warning fs-5"></i>
@@ -29,7 +29,7 @@
                             <strong>{{ station.name }}</strong>
                             <div class="small text-secondary mt-1">{{ station.ip_address }}</div>
                             <div class="small text-muted mt-1">
-                                {{ station.last_seen.strftime('%H:%M') if station.last_seen else 'никогда' }}
+                                Статус: {{ station.status.name if station.status else 'не задан' }}
                             </div>
                         </div>
                     </div>
@@ -43,7 +43,7 @@
             </div>
 
             {% if current_user is operator_or_admin %}
-            <button class="btn btn-outline-primary w-100 mt-4">
+            <button class="btn btn-outline-primary w-100 mt-4" data-bs-toggle="modal" data-bs-target="#addStationModal">
                 <i class="bi bi-plus-lg me-2"></i>Добавить станцию
             </button>
             {% endif %}
@@ -66,15 +66,6 @@
                             <h6 class="text-muted">Температура</h6>
                             <h2 class="text-white" id="current-temp">—</h2>
                             <small class="text-info">°C</small>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="card bg-dark border-secondary text-center">
-                        <div class="card-body">
-                            <h6 class="text-muted">Влажность</h6>
-                            <h2 class="text-white" id="current-hum">—</h2>
-                            <small class="text-info">%</small>
                         </div>
                     </div>
                 </div>
@@ -119,7 +110,6 @@
             if (data.length > 0) {
                 const last = data[0];
                 document.getElementById('current-temp').textContent = last.temperature?.toFixed(1) || '—';
-                document.getElementById('current-hum').textContent = last.humidity?.toFixed(1) || '—';
             }
 
             const ctx = document.getElementById('weatherChart')?.getContext('2d');
@@ -127,7 +117,6 @@
 
             const labels = data.map(m => new Date(m.timestamp).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}));
             const temps = data.map(m => m.temperature);
-            const hums = data.map(m => m.humidity);
 
             if (weatherChart) weatherChart.destroy();
 
@@ -136,15 +125,13 @@
                 data: {
                     labels: labels.reverse(),
                     datasets: [
-                        {label: 'Температура (°C)', data: temps.reverse(), borderColor: '#0dcaf0', tension: 0.3, yAxisID: 'y'},
-                        {label: 'Влажность (%)', data: hums.reverse(), borderColor: '#198754', tension: 0.3, yAxisID: 'y2'}
+                        {label: 'Температура (°C)', data: temps.reverse(), borderColor: '#0dcaf0', tension: 0.3, yAxisID: 'y'}
                     ]
                 },
                 options: {
                     responsive: true,
                     scales: {
-                        y: { position: 'left', title: {display: true, text: '°C'} },
-                        y2: { position: 'right', title: {display: true, text: '%'}, grid: {drawOnChartArea: false} }
+                        y: { position: 'left', title: {display: true, text: '°C'} }
                     }
                 }
             });
@@ -156,4 +143,64 @@
     if (stationId) loadStationData();
     setInterval(() => { if (stationId) loadStationData(); }, 60000);
 </script>
+
+<!-- Модальное окно добавления станции -->
+<div class="modal fade" id="addStationModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content bg-dark text-white border-secondary">
+            <div class="modal-header border-secondary">
+                <h5 class="modal-title"><i class="bi bi-plus-circle me-2"></i>Добавить станцию</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="{{ url_for('main.add_station') }}">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Название <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control bg-dark text-white border-secondary" id="name" name="name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="ip_address" class="form-label">IP-адрес</label>
+                        <input type="text" class="form-control bg-dark text-white border-secondary" id="ip_address" name="ip_address">
+                    </div>
+                    <div class="mb-3">
+                        <label for="locationstr" class="form-label">Описание местоположения</label>
+                        <input type="text" class="form-control bg-dark text-white border-secondary" id="locationstr" name="locationstr">
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="latitude" class="form-label">Широта</label>
+                            <input type="number" step="any" class="form-control bg-dark text-white border-secondary" id="latitude" name="latitude">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="longitude" class="form-label">Долгота</label>
+                            <input type="number" step="any" class="form-control bg-dark text-white border-secondary" id="longitude" name="longitude">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="status_id" class="form-label">Статус</label>
+                        <select class="form-select bg-dark text-white border-secondary" id="status_id" name="status_id">
+                            <option value="">Не выбран</option>
+                            {% for status in statuses %}
+                            <option value="{{ status.id }}">{{ status.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="equipment" class="form-label">Оборудование</label>
+                        <select multiple class="form-select bg-dark text-white border-secondary" id="equipment" name="equipment">
+                            {% for eq in equipments %}
+                            <option value="{{ eq.id }}">{{ eq.name }}</option>
+                            {% endfor %}
+                        </select>
+                        <div class="form-text text-secondary">Удерживайте Ctrl/Cmd для выбора нескольких</div>
+                    </div>
+                </div>
+                <div class="modal-footer border-secondary">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                    <button type="submit" class="btn btn-primary">Добавить</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 {% endblock %}
