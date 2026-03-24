@@ -1,0 +1,286 @@
+{% extends 'base.html' %}
+
+{% block title %}Настройки системы{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4"><i class="bi bi-gear"></i> Настройки системы</h2>
+
+    <ul class="nav nav-tabs" id="settingsTab" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="users-tab" data-bs-toggle="tab" data-bs-target="#users" type="button" role="tab">Пользователи</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="stations-tab" data-bs-toggle="tab" data-bs-target="#stations" type="button" role="tab">Станции</button>
+        </li>
+    </ul>
+
+    <div class="tab-content mt-4">
+        <!-- Вкладка Пользователи -->
+        <div class="tab-pane fade show active" id="users" role="tabpanel">
+            <div class="card bg-dark border-secondary">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Управление пользователями</h5>
+                    <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#addUserModal">
+                        <i class="bi bi-plus-lg"></i> Добавить
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-dark table-hover">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Имя пользователя</th>
+                                    <th>Роль</th>
+                                    <th>Действия</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for user in users %}
+                                <tr>
+                                    <td>{{ user.id }}</td>
+                                    <td>{{ user.username }}</td>
+                                    <td>
+                                        <form method="POST" action="{{ url_for('admin.edit_user', user_id=user.id) }}" class="d-inline">
+                                            <select name="role_id" class="form-select form-select-sm bg-dark text-white border-secondary" style="width: auto; display: inline-block;">
+                                                {% for role in roles %}
+                                                <option value="{{ role.id }}" {% if user.role_id == role.id %}selected{% endif %}>{{ role.name }}</option>
+                                                {% endfor %}
+                                            </select>
+                                            <button type="submit" class="btn btn-sm btn-outline-primary">Сохранить</button>
+                                        </form>
+                                    </td>
+                                    <td>
+                                        <form method="POST" action="{{ url_for('admin.delete_user', user_id=user.id) }}" onsubmit="return confirm('Удалить пользователя {{ user.username }}?');">
+                                            <button type="submit" class="btn btn-sm btn-outline-danger" {% if user.id == current_user.id %}disabled{% endif %}>
+                                                <i class="bi bi-trash"></i> Удалить
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                {% else %}
+                                <tr><td colspan="4" class="text-center">Нет пользователей</td></tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Вкладка Станции -->
+        <div class="tab-pane fade" id="stations" role="tabpanel">
+            <div class="card bg-dark border-secondary">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Управление станциями</h5>
+                    <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#addStationModal">
+                        <i class="bi bi-plus-lg"></i> Добавить
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-dark table-hover">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Название</th>
+                                    <th>IP-адрес</th>
+                                    <th>Статус</th>
+                                    <th>Оборудование</th>
+                                    <th>Действия</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for station in stations %}
+                                <tr>
+                                    <td>{{ station.id }}</td>
+                                    <td>{{ station.name }}</td>
+                                    <td>{{ station.ip_address or '—' }}</td>
+                                    <td>{{ station.status.name if station.status else '—' }}</td>
+                                    <td>
+                                        {% for eq in station.equipment %}
+                                            <span class="badge bg-secondary">{{ eq.name }}</span>
+                                        {% else %}
+                                            —
+                                        {% endfor %}
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editStationModal{{ station.id }}">
+                                            <i class="bi bi-pencil"></i> Редактировать
+                                        </button>
+                                        <form method="POST" action="{{ url_for('admin.delete_station', station_id=station.id) }}" class="d-inline" onsubmit="return confirm('Удалить станцию {{ station.name }}? Это удалит все данные измерений.');">
+                                            <button type="submit" class="btn btn-sm btn-outline-danger">
+                                                <i class="bi bi-trash"></i> Удалить
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+
+                                <!-- Модальное окно редактирования станции -->
+                                <div class="modal fade" id="editStationModal{{ station.id }}" tabindex="-1">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content bg-dark text-white border-secondary">
+                                            <div class="modal-header border-secondary">
+                                                <h5 class="modal-title">Редактирование станции: {{ station.name }}</h5>
+                                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                            </div>
+                                            <form method="POST" action="{{ url_for('admin.edit_station', station_id=station.id) }}">
+                                                <div class="modal-body">
+                                                    <div class="mb-3">
+                                                        <label for="name{{ station.id }}" class="form-label">Название</label>
+                                                        <input type="text" class="form-control bg-dark text-white border-secondary" id="name{{ station.id }}" name="name" value="{{ station.name }}" required>
+                                                    </div>
+                                                    <div class="mb-3">
+                                                        <label for="ip_address{{ station.id }}" class="form-label">IP-адрес</label>
+                                                        <input type="text" class="form-control bg-dark text-white border-secondary" id="ip_address{{ station.id }}" name="ip_address" value="{{ station.ip_address }}">
+                                                    </div>
+                                                    <div class="mb-3">
+                                                        <label for="locationstr{{ station.id }}" class="form-label">Описание местоположения</label>
+                                                        <input type="text" class="form-control bg-dark text-white border-secondary" id="locationstr{{ station.id }}" name="locationstr" value="{{ station.locationstr }}">
+                                                    </div>
+                                                    <div class="row">
+                                                        <div class="col-md-6 mb-3">
+                                                            <label for="latitude{{ station.id }}" class="form-label">Широта</label>
+                                                            <input type="number" step="any" class="form-control bg-dark text-white border-secondary" id="latitude{{ station.id }}" name="latitude" value="{{ station.latitude }}">
+                                                        </div>
+                                                        <div class="col-md-6 mb-3">
+                                                            <label for="longitude{{ station.id }}" class="form-label">Долгота</label>
+                                                            <input type="number" step="any" class="form-control bg-dark text-white border-secondary" id="longitude{{ station.id }}" name="longitude" value="{{ station.longitude }}">
+                                                        </div>
+                                                    </div>
+                                                    <div class="mb-3">
+                                                        <label for="status_id{{ station.id }}" class="form-label">Статус</label>
+                                                        <select class="form-select bg-dark text-white border-secondary" id="status_id{{ station.id }}" name="status_id">
+                                                            <option value="">Не выбран</option>
+                                                            {% for status in statuses %}
+                                                            <option value="{{ status.id }}" {% if station.status_id == status.id %}selected{% endif %}>{{ status.name }}</option>
+                                                            {% endfor %}
+                                                        </select>
+                                                    </div>
+                                                    <div class="mb-3">
+                                                        <label for="equipment{{ station.id }}" class="form-label">Оборудование</label>
+                                                        <select multiple class="form-select bg-dark text-white border-secondary" id="equipment{{ station.id }}" name="equipment">
+                                                            {% for eq in equipments %}
+                                                            <option value="{{ eq.id }}" {% if eq in station.equipment %}selected{% endif %}>{{ eq.name }}</option>
+                                                            {% endfor %}
+                                                        </select>
+                                                        <div class="form-text text-secondary">Удерживайте Ctrl/Cmd для выбора нескольких</div>
+                                                    </div>
+                                                </div>
+                                                <div class="modal-footer border-secondary">
+                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                                                    <button type="submit" class="btn btn-primary">Сохранить</button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% else %}
+                                <tr><td colspan="6" class="text-center">Нет станций</td></tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно добавления пользователя -->
+<div class="modal fade" id="addUserModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content bg-dark text-white border-secondary">
+            <div class="modal-header border-secondary">
+                <h5 class="modal-title">Добавить пользователя</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="{{ url_for('admin.add_user') }}">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="username" class="form-label">Имя пользователя</label>
+                        <input type="text" class="form-control bg-dark text-white border-secondary" id="username" name="username" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Пароль</label>
+                        <input type="password" class="form-control bg-dark text-white border-secondary" id="password" name="password" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="role_id" class="form-label">Роль</label>
+                        <select class="form-select bg-dark text-white border-secondary" id="role_id" name="role_id">
+                            {% for role in roles %}
+                            <option value="{{ role.id }}">{{ role.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer border-secondary">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                    <button type="submit" class="btn btn-primary">Добавить</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно добавления станции (админское) -->
+<div class="modal fade" id="addStationModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content bg-dark text-white border-secondary">
+            <div class="modal-header border-secondary">
+                <h5 class="modal-title">Добавить станцию</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="{{ url_for('admin.add_station') }}">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Название <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control bg-dark text-white border-secondary" id="name" name="name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="ip_address" class="form-label">IP-адрес</label>
+                        <input type="text" class="form-control bg-dark text-white border-secondary" id="ip_address" name="ip_address">
+                    </div>
+                    <div class="mb-3">
+                        <label for="locationstr" class="form-label">Описание местоположения</label>
+                        <input type="text" class="form-control bg-dark text-white border-secondary" id="locationstr" name="locationstr">
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="latitude" class="form-label">Широта</label>
+                            <input type="number" step="any" class="form-control bg-dark text-white border-secondary" id="latitude" name="latitude">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="longitude" class="form-label">Долгота</label>
+                            <input type="number" step="any" class="form-control bg-dark text-white border-secondary" id="longitude" name="longitude">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="status_id" class="form-label">Статус</label>
+                        <select class="form-select bg-dark text-white border-secondary" id="status_id" name="status_id">
+                            <option value="">Не выбран</option>
+                            {% for status in statuses %}
+                            <option value="{{ status.id }}">{{ status.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="equipment" class="form-label">Оборудование</label>
+                        <select multiple class="form-select bg-dark text-white border-secondary" id="equipment" name="equipment">
+                            {% for eq in equipments %}
+                            <option value="{{ eq.id }}">{{ eq.name }}</option>
+                            {% endfor %}
+                        </select>
+                        <div class="form-text text-secondary">Удерживайте Ctrl/Cmd для выбора нескольких</div>
+                    </div>
+                </div>
+                <div class="modal-footer border-secondary">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                    <button type="submit" class="btn btn-primary">Добавить</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

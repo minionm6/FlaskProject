@@ -42,6 +42,16 @@ class User(db.Model, UserMixin):
     def __repr__(self):
         return f'<User {self.username}>'
     
+    @property
+    def role_name(self):
+        return self.role.name if self.role else None
+    
+    def is_admin(self):
+        return self.role_name == 'admin'
+    
+    def is_operator(self):
+        return self.role_name == 'operator'
+    
 
 # Класс станции 
 class Station(db.Model):

@@ -32,9 +32,10 @@
                         </a>
                     </li>
                     {% if current_user.is_authenticated %}
-                        {% if current_user is admin %}
+                        <!-- Ссылка на админ-панель для администраторов -->
+                        {% if current_user.is_admin() %}
                         <li class="nav-item">
-                            <a class="nav-link" href="#">
+                            <a class="nav-link {% if request.path.startswith('/admin') %}active{% endif %}" href="{{ url_for('admin.settings') }}">
                                 <i class="bi bi-gear me-1" aria-hidden="true"></i> Settings
                             </a>
                         </li>
@@ -42,6 +43,9 @@
                         <li class="nav-item">
                             <span class="nav-link text-light">
                                 <i class="bi bi-person-circle me-1" aria-hidden="true"></i>{{ current_user.username }}
+                                {% if current_user.role_name %}
+                                <span class="badge bg-secondary ms-1">{{ current_user.role_name }}</span>
+                                {% endif %}
                             </span>
                         </li>
                         <li class="nav-item">
@@ -136,7 +140,7 @@
         // Отступ под навбаром
         function fixNavbarOverlap() {
             const navbar = document.querySelector('.navbar.fixed-top');
-            const main = document.getElementById('main-content');
+            const main = document.querySelector('.app-main');
             if (!navbar || !main) return;
 
             const navbarHeight = navbar.offsetHeight;

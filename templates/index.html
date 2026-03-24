@@ -42,7 +42,7 @@
                 {% endfor %}
             </div>
 
-            {% if current_user is operator_or_admin %}
+            {% if current_user.is_operator() or current_user.is_admin() %}
             <button class="btn btn-outline-primary w-100 mt-4" data-bs-toggle="modal" data-bs-target="#addStationModal">
                 <i class="bi bi-plus-lg me-2"></i>Добавить станцию
             </button>
