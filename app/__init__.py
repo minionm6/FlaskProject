@@ -4,7 +4,7 @@ from flask_login import LoginManager
 from app.config import Config
 from app.utils.ping_monitor import start_ping_monitoring
 from app.utils.db_init import create_admin, create_roles, create_equipments, create_statuses
-
+from app.utils.file_handler import ensure_upload_folder
 
 
 
@@ -60,6 +60,7 @@ def create_app():
         create_admin() 
         create_statuses()
         create_equipments() 
+        ensure_upload_folder()
     
     init_template_filters(app)
     

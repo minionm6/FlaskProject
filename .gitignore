@@ -23,3 +23,6 @@ Thumbs.db
 
 # БД
 *.db
+
+static/uploads/
+!static/uploads/.gitkeep

@@ -18,3 +18,8 @@ class Config:
     # Настройки базы данных SQLite
     SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(os.path.dirname(__file__), '..', 'db1.db')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+
+     # Папка для загрузки изображений
+    UPLOAD_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static', 'uploads')
+    MAX_CONTENT_LENGTH = 16 * 1024 * 1024  # 16 MB максимум
+    ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}

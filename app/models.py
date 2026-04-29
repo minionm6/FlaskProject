@@ -129,3 +129,66 @@ class Measurement(db.Model):
 
     def __repr__(self):
         return f"<Measurement station={self.station_id} time={self.timestamp}>"
+    
+    
+# Класс действия на станциях
+class MaintenanceAction(db.Model):
+    __tablename__ = "maintenance_actions"
+
+    id = db.Column(db.Integer, primary_key=True)
+    station_id = db.Column(
+        db.Integer, db.ForeignKey("stations.id", ondelete="CASCADE"),
+        nullable=False, index=True
+    )
+    
+    action_date = db.Column(db.DateTime, nullable=False)
+    created_at = db.Column(db.DateTime, default=db.func.now(), nullable=False)
+    description = db.Column(db.Text, nullable=False)
+    images_folder = db.Column(db.String(500))
+    
+    station = db.relationship(
+        "Station", 
+        backref=db.backref("maintenance_actions", lazy=True, cascade="all, delete-orphan")
+    )
+
+    def __repr__(self):
+        return f"<MaintenanceAction station={self.station_id} date={self.action_date}>"
+    
+    @property
+    def has_images(self):
+        """Проверяет, есть ли изображения"""
+        if not self.images_folder:
+            return False
+        import os
+        from flask import current_app
+        try:
+            full_path = os.path.join(current_app.config['UPLOAD_FOLDER'], self.images_folder)
+            if not os.path.exists(full_path):
+                return False
+            # Проверяем, есть ли в папке файлы изображений
+            for f in os.listdir(full_path):
+                if f.lower().endswith(('.png', '.jpg', '.jpeg', '.gif')):
+                    return True
+            return False
+        except Exception as e:
+            print(f"DEBUG has_images error: {e}")
+            return False
+    
+    @property
+    def image_list(self):
+        """Возвращает список относительных путей к изображениям"""
+        if not self.images_folder:
+            return []
+        import os
+        from flask import current_app
+        full_path = os.path.join(current_app.config['UPLOAD_FOLDER'], self.images_folder)
+        files = []
+        try:
+            if os.path.exists(full_path):
+                for f in os.listdir(full_path):
+                    if f.lower().endswith(('.png', '.jpg', '.jpeg', '.gif')):
+                        # Путь относительно папки uploads
+                        files.append(f"{self.images_folder}/{f}")
+        except OSError as e:
+            print(f"DEBUG image_list error: {e}")
+        return sorted(files)
