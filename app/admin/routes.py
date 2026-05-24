@@ -140,3 +140,73 @@ def delete_station(station_id):
     db.session.commit()
     flash(f'Станция {station.name} удалена', 'success')
     return redirect(url_for('admin.settings'))
+
+# ============ Управление оборудованием ============
+
+@bp.route('/equipment/add', methods=['POST'])
+@login_required
+@admin_required
+def add_equipment():
+    """Добавление нового типа оборудования (админка)"""
+    name = request.form.get('name')
+    metric_name = request.form.get('metric_name')
+    
+    if not name or not metric_name:
+        flash('Название и метрика обязательны', 'danger')
+        return redirect(url_for('admin.settings'))
+    
+    if Equipment.query.filter_by(name=name).first():
+        flash(f'Оборудование "{name}" уже существует', 'danger')
+        return redirect(url_for('admin.settings'))
+    
+    equipment = Equipment(name=name, metric_name=metric_name)
+    db.session.add(equipment)
+    db.session.commit()
+    
+    flash(f'Оборудование "{name}" добавлено', 'success')
+    return redirect(url_for('admin.settings'))
+
+
+@bp.route('/equipment/<int:equipment_id>/edit', methods=['POST'])
+@login_required
+@admin_required
+def edit_equipment(equipment_id):
+    """Редактирование оборудования (админка)"""
+    equipment = Equipment.query.get_or_404(equipment_id)
+    
+    name = request.form.get('name')
+    metric_name = request.form.get('metric_name')
+    
+    if not name or not metric_name:
+        flash('Название и метрика обязательны', 'danger')
+        return redirect(url_for('admin.settings'))
+    
+    # Проверяем уникальность имени (кроме текущего)
+    existing = Equipment.query.filter_by(name=name).first()
+    if existing and existing.id != equipment_id:
+        flash(f'Оборудование с именем "{name}" уже существует', 'danger')
+        return redirect(url_for('admin.settings'))
+    
+    equipment.name = name
+    equipment.metric_name = metric_name
+    db.session.commit()
+    
+    flash(f'Оборудование "{name}" обновлено', 'success')
+    return redirect(url_for('admin.settings'))
+
+
+@bp.route('/equipment/<int:equipment_id>/delete', methods=['POST'])
+@login_required
+@admin_required
+def delete_equipment(equipment_id):
+    """Удаление типа оборудования (админка)"""
+    equipment = Equipment.query.get_or_404(equipment_id)
+    name = equipment.name
+    
+    # Удаляем связи со станциями (очищаем через secondary таблицу)
+    equipment.stations = []
+    db.session.delete(equipment)
+    db.session.commit()
+    
+    flash(f'Оборудование "{name}" удалено', 'success')
+    return redirect(url_for('admin.settings'))

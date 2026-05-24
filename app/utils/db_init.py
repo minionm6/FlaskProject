@@ -42,10 +42,16 @@ def create_statuses():
     db.session.commit()
 
 def create_equipments():
-    """Создаёт базовые типы оборудования"""
-
-    equipments = ['Термометр', 'Барометр']
-    for name in equipments:
-        if not Equipment.query.filter_by(name=name).first():
-            db.session.add(Equipment(name=name))
-    db.session.commit()
+    """Создает начальный список оборудования, если его нет"""
+    from app.models import Equipment
+    if Equipment.query.first() is None:
+        equipments = [
+            Equipment(name="Термометр DS18B20", metric_name="temperature"),
+            Equipment(name="Гигрометр DHT22", metric_name="humidity"),
+            Equipment(name="Барометр BMP280", metric_name="pressure"),
+            Equipment(name="Анемометр A100LK", metric_name="wind_speed"),
+            Equipment(name="Флюгер W200P", metric_name="wind_direction"),
+            Equipment(name="Датчик осадков RG-1", metric_name="precipitation"),
+        ]
+        db.session.add_all(equipments)
+        db.session.commit()

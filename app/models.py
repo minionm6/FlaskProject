@@ -98,7 +98,8 @@ class Equipment(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
-
+    metric_name = db.Column(db.String(100))
+    
     def __repr__(self):
         return f"<Equipment {self.name}>"
 
@@ -122,14 +123,15 @@ class Measurement(db.Model):
     timestamp = db.Column(db.DateTime, index=True, nullable=False)
 
     temperature = db.Column(db.Float)
+    humidity = db.Column(db.Float)
+    pressure = db.Column(db.Float)          # Новое
+    wind_speed = db.Column(db.Float)        # Новое
+    wind_direction = db.Column(db.Float)    # Новое
+    precipitation = db.Column(db.Float)     # Новое
 
     __table_args__ = (
         db.UniqueConstraint("station_id", "timestamp", name="_station_time_uc"),
     )
-
-    def __repr__(self):
-        return f"<Measurement station={self.station_id} time={self.timestamp}>"
-    
     
 # Класс действия на станциях
 class MaintenanceAction(db.Model):

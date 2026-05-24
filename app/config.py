@@ -7,9 +7,9 @@ class Config:
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'dev-secret-key-change-in-production'
     
     # Настройки пинг-мониторинга
-    PING_INTERVAL = 600  # Секунд
+    PING_INTERVAL = 30  # Секунд
     LOG_COUNT = 6        # Количество последних логов
-    TARGET_IP = "10.10.0.187"
+    TARGET_IP = "192.168.42.1"
     LOG_FILE = "ping_log.txt"
     
     # Время запуска приложения

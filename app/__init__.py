@@ -6,10 +6,9 @@ from app.utils.ping_monitor import start_ping_monitoring
 from app.utils.db_init import create_admin, create_roles, create_equipments, create_statuses
 from app.utils.file_handler import ensure_upload_folder
 
-
+login_manager = LoginManager()
 
 def init_template_filters(app):
-
     @app.template_test('admin')
     def is_admin(user):
         if not user or not user.is_authenticated:
@@ -22,29 +21,17 @@ def init_template_filters(app):
             return False
         return user.role and user.role.name in ("admin", "operator")
 
-
-
-login_manager = LoginManager()
-
-
 def create_app():
-    """Фабрика создания приложения Flask"""
     app = Flask(__name__,
                 template_folder='../templates',
                 static_folder='../static')
     
-    # Загрузка конфигурации
     app.config.from_object(Config)
     
-    # Инициализация базы данных
     db.init_app(app)
-
-    # Логин менеджер для проверки регистрации
     login_manager.init_app(app)
     login_manager.login_view = 'auth.login'
-    # ...
     
-    # Регистрация blueprint'ов
     from app.auth import bp as auth_bp
     app.register_blueprint(auth_bp, url_prefix='/auth')
 
@@ -55,23 +42,21 @@ def create_app():
     app.register_blueprint(main_bp)
     
     with app.app_context():
-        db.create_all()        
-        create_roles()         
-        create_admin() 
+        db.create_all()
+        create_roles()
+        create_admin()
         create_statuses()
-        create_equipments() 
+        create_equipments()
         ensure_upload_folder()
     
     init_template_filters(app)
     
-    # Запуск мониторинга пинга
-    start_ping_monitoring()
+    # Запуск фонового мониторинга всех станций
+    start_ping_monitoring(app)
     
     return app
 
-
 @login_manager.user_loader
 def load_user(user_id):
-    """Возвращает объект пользователя по его id"""
     from app.models import User
     return User.query.get(int(user_id))
